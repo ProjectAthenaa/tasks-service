@@ -14,6 +14,7 @@ type Task struct {
 	SubscriptionToken string    `json:"SubscriptionToken"`
 	ControlToken      string    `json:"ControlToken"`
 	StartTime         time.Time `json:"StartTime"`
+	Status            Status    `json:"Status"`
 }
 
 type TaskStatus struct {

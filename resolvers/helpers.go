@@ -2,6 +2,8 @@ package resolvers
 
 import (
 	"context"
+	"crypto/sha1"
+	"encoding/hex"
 	"errors"
 	"fmt"
 	jsoniter "github.com/json-iterator/go"
@@ -25,4 +27,10 @@ func contextExtract(ctx context.Context) (*string, error) {
 
 func (r *Resolver) isBeingProcessed(ctx context.Context, taskID string) bool {
 	return r.conn.SIsMember(ctx, "tasks:processing", taskID).Val()
+}
+
+func hash(text string) string {
+	algorithm := sha1.New()
+	algorithm.Write([]byte(text))
+	return hex.EncodeToString(algorithm.Sum(nil))
 }

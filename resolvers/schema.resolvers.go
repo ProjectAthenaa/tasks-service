@@ -7,6 +7,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
+
 	protos "github.com/ProjectAthenaa/scheduler-service/connector"
 	"github.com/ProjectAthenaa/sonic-core/sonic"
 	"github.com/ProjectAthenaa/sonic-core/sonic/database/ent"
@@ -14,7 +16,6 @@ import (
 	"github.com/ProjectAthenaa/tasks-service/graph/generated"
 	"github.com/ProjectAthenaa/tasks-service/graph/model"
 	"github.com/prometheus/common/log"
-	"time"
 )
 
 func (r *mutationResolver) SendCommand(ctx context.Context, controlToken string, command model.Command) (bool, error) {
@@ -117,13 +118,49 @@ func (r *queryResolver) GetScheduledTasks(ctx context.Context) ([]*model.Task, e
 	return convertedTasks, nil
 }
 
+func (r *queryResolver) GetRunningTasks(ctx context.Context) ([]*model.Task, error) {
+	userID, err := contextExtract(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	user, err := r.client.User.Get(ctx, sonic.UUIDParser(*userID))
+	if err != nil {
+		return nil, sonic.EntErr(err)
+	}
+
+	app, err := user.App(ctx)
+	if err != nil {
+		return nil, sonic.EntErr(err)
+	}
+
+	tasks := app.QueryTaskGroups().QueryTasks().AllX(ctx)
+
+	var runningTasks []*model.Task
+
+	for _, taskID := range r.conn.SMembers(ctx, "tasks:processing").Val() {
+		for _, task := range tasks {
+			if taskID == task.ID.String() {
+				runningTasks = append(runningTasks, &model.Task{
+					ID:                taskID,
+					SubscriptionToken: taskID,
+					ControlToken:      hash(taskID),
+					StartTime:         *task.StartTime,
+					Status:            model.Status(r.conn.Get(ctx, fmt.Sprintf("tasks:updates:last-updates:%s", taskID)).Val()),
+				})
+			}
+		}
+	}
+
+}
+
 func (r *subscriptionResolver) TaskUpdates(ctx context.Context, subscriptionTokens []string) (<-chan *model.TaskStatus, error) {
 	//the channel in which updates are pushed to
 	updates := make(chan *model.TaskStatus)
 
 	var channels []string
 
-	for _, token := range subscriptionTokens{
+	for _, token := range subscriptionTokens {
 		channels = append(channels, fmt.Sprintf("tasks:updates:%s", token))
 	}
 

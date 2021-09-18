@@ -55,10 +55,12 @@ type Task{
     SubscriptionToken: String!
     ControlToken: String!
     StartTime: Time!
+    Status: STATUS!
 }
 
 type Query{
     getScheduledTasks: [Task]!
+    getRunningTasks: [Task!]
 }
 
 type Mutation{
