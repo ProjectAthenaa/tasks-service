@@ -146,7 +146,7 @@ func (r *queryResolver) GetRunningTasks(ctx context.Context) ([]*model.Task, err
 					SubscriptionToken: taskID,
 					ControlToken:      hash(taskID),
 					StartTime:         *task.StartTime,
-					Status:            model.Status(r.conn.Get(ctx, fmt.Sprintf("tasks:updates:last-updates:%s", taskID)).Val()),
+					Status:            model.Status(r.conn.Get(ctx, fmt.Sprintf("tasks:updates:last-update:%s", taskID)).Val()),
 				})
 			}
 		}
