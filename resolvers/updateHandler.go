@@ -9,12 +9,21 @@ import (
 )
 
 func (r *Resolver) handleUpdates(ctx context.Context, updates chan *model.TaskStatus, subscription *redis.PubSub) {
+	defer close(updates)
+	defer func(subscription *redis.PubSub) {
+		if err := subscription.Close(); err != nil {
+			log.Error("error closing subscription: ", err)
+		}
+	}(subscription)
 	for {
 		select {
 		case <-ctx.Done():
 			log.Info("Subscription Closed")
 			return
-		case update := <-subscription.Channel():
+		case update, ok := <-subscription.Channel():
+			if !ok {
+				return
+			}
 			go r.processUpdate(updates, update.Payload)
 		}
 	}
