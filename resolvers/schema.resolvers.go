@@ -66,7 +66,7 @@ func (r *mutationResolver) StartTasks(ctx context.Context, taskIDs []string) (bo
 		updates = append(updates, task.Update().SetStartTime(startTime))
 
 		//append the data to the queue
-		pipe.RPush(ctx, "queue:"+string(task.Edges.Product[0].Site), task.ID)
+		pipe.RPush(ctx, "queue:"+string(task.Edges.Product[0].Site), task.ID.String())
 	}
 
 	if _, err = pipe.Exec(ctx); err != nil {
