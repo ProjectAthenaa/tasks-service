@@ -6,6 +6,7 @@ package resolvers
 import (
 	"context"
 	"errors"
+	"fmt"
 	protos "github.com/ProjectAthenaa/scheduler-service/connector"
 	"github.com/ProjectAthenaa/sonic-core/sonic"
 	"github.com/ProjectAthenaa/sonic-core/sonic/database/ent"
@@ -120,8 +121,14 @@ func (r *subscriptionResolver) TaskUpdates(ctx context.Context, subscriptionToke
 	//the channel in which updates are pushed to
 	updates := make(chan *model.TaskStatus)
 
+	var channels []string
+
+	for _, token := range subscriptionTokens{
+		channels = append(channels, fmt.Sprintf("tasks:updates:%s", token))
+	}
+
 	//updates subscription
-	subscription := r.conn.Subscribe(ctx, subscriptionTokens...)
+	subscription := r.conn.Subscribe(ctx, channels...)
 
 	//handle new updates
 	go r.handleUpdates(ctx, updates, subscription)
