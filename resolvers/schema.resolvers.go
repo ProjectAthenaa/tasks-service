@@ -152,6 +152,7 @@ func (r *queryResolver) GetRunningTasks(ctx context.Context) ([]*model.Task, err
 		}
 	}
 
+	return runningTasks, nil
 }
 
 func (r *subscriptionResolver) TaskUpdates(ctx context.Context, subscriptionTokens []string) (<-chan *model.TaskStatus, error) {
