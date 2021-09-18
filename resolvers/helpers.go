@@ -26,7 +26,11 @@ func contextExtract(ctx context.Context) (*string, error) {
 }
 
 func (r *Resolver) isBeingProcessed(ctx context.Context, taskID string) bool {
-	return r.conn.SIsMember(ctx, "tasks:processing", taskID).Val()
+	if exists, err := r.conn.SIsMember(ctx, "tasks:processing", taskID).Result(); err != nil || !exists{
+		return false
+	}
+
+	return true
 }
 
 func hash(text string) string {
