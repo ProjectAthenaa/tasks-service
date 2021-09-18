@@ -46,6 +46,7 @@ func (r *mutationResolver) StartTasks(ctx context.Context, taskIDs []string) (bo
 	startTime := time.Now()
 
 	for _, id := range taskIDs {
+		log.Info("Task: ", id, " Processing: ", r.isBeingProcessed(ctx, id))
 		if r.isBeingProcessed(ctx, id) {
 			continue
 		}

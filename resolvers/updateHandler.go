@@ -15,6 +15,8 @@ func (r *Resolver) handleUpdates(ctx context.Context, updates chan *model.TaskSt
 			log.Error("error closing subscription: ", err)
 		}
 	}(subscription)
+
+
 	for {
 		select {
 		case <-ctx.Done():
