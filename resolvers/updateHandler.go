@@ -15,6 +15,7 @@ func (r *Resolver) handleUpdates(ctx context.Context, updates chan *model.TaskSt
 			log.Info("Subscription Closed")
 			return
 		case update := <-subscription.Channel():
+			log.Info(update.Payload)
 			go r.processUpdate(updates, update.Payload)
 		}
 	}
